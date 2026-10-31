@@ -6,8 +6,8 @@
 -- ============================================================
 do $$
 declare
-  v_username text := lower('rutik@rtr');
-  v_password text := 'rutik@rtr';
+  v_username text := lower('r');
+  v_password text := 'r';
   v_company  uuid;
 begin
   select id into v_company from companies where name = 'Techyverve';

@@ -26,4 +26,4 @@ companies ─┬─ app_users ──< area_members >── areas ──< leads �
 
 ## Setup order
 1. `schema.sql`: creates the tables and the Techyverve company.
-2. `seed_superadmin.sql`: creates the superadmin login (`rutik@rtr`).
+2. `seed_superadmin.example.sql`: copy it, set your own username and password inside, and run it to create the superadmin login.

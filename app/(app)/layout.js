@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { api, initials } from '@/lib/client';
 import { UserCtx } from '@/components/User';
 import { Icon, Loading } from '@/components/ui';
+import { Brand } from '@/components/Logo';
 
 export default function AppLayout({ children }) {
   const router = useRouter();
@@ -48,12 +49,8 @@ export default function AppLayout({ children }) {
     <UserCtx.Provider value={user}>
       <div className="app">
         <aside className="sidebar">
-          <div className="brand">
-            <div className="brand-mark">T</div>
-            <div>
-              <div className="brand-name">{user.company}</div>
-              <div className="brand-sub">CRM</div>
-            </div>
+          <div className="brand" style={{ padding: '4px 8px 16px' }}>
+            <Brand size={36} />
           </div>
           <nav className="nav">
             {items.map((i) => (
@@ -77,7 +74,13 @@ export default function AppLayout({ children }) {
           </div>
         </aside>
 
-        <main className="main">{children}</main>
+        <main className="main">
+          <div className="topbar">
+            <Brand size={32} />
+            <div className="avatar">{initials(user.name)}</div>
+          </div>
+          {children}
+        </main>
 
         <nav className="bottomnav">
           {items.map((i) => (

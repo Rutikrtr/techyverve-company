@@ -2,11 +2,20 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
+import { Icon } from '@/components/ui';
+import Logo, { Brand } from '@/components/Logo';
+
+const FEATURES = [
+  { icon: 'pin', title: 'Live location on every lead', text: 'Each hotel is saved with the exact spot, straight from the phone.' },
+  { icon: 'list', title: 'Confirmation tracking', text: 'Follow every hotel from 10% to 100% with team remarks.' },
+  { icon: 'book', title: 'Hishob in one place', text: 'Confirmed clients, payments and company expenses together.' },
+];
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -25,56 +34,90 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login">
-      <div className="login-art">
-        <div className="brand" style={{ padding: 0 }}>
-          <div className="brand-mark">T</div>
-          <div>
-            <div className="brand-name">Techyverve</div>
-            <div className="brand-sub">CRM</div>
-          </div>
-        </div>
-        <div>
+    <div className="login2">
+      <aside className="l2-art">
+        <div className="l2-grid" />
+        <div className="l2-glow" />
+        <Brand light size={42} />
+        <div className="l2-hero">
+          <span className="l2-pill">Techyverve CRM</span>
           <h1>Every hotel lead, from the field to the books.</h1>
-          <p>Track camps, confirmations and remarks with live location, then see the hishob in one place.</p>
+          <p>One simple app for your team in the field and the people running the numbers.</p>
+          <ul className="l2-feat">
+            {FEATURES.map((f) => (
+              <li key={f.title}>
+                <span className="l2-ic"><Icon name={f.icon} size={16} /></span>
+                <div>
+                  <b>{f.title}</b>
+                  <span>{f.text}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
-        <div style={{ color: '#b2b8c4', fontSize: 12, position: 'relative' }}>Techyverve internal tool</div>
-      </div>
+        <div className="l2-foot">© {new Date().getFullYear()} Techyverve. All rights reserved.</div>
+      </aside>
 
-      <div className="login-form">
-        <form className="login-box" onSubmit={submit}>
-          <h2>Sign in</h2>
-          <p className="sub">Use the login your superadmin gave you.</p>
+      <main className="l2-side">
+        <div className="l2-mobile-top">
+          <div className="l2-grid" />
+          <div className="l2-glow" />
+          <Brand light size={44} />
+          <p>Every hotel lead, from the field to the books.</p>
+        </div>
+
+        <form className="l2-card" onSubmit={submit}>
+          <div className="l2-card-logo"><Logo size={44} /></div>
+          <h2>Welcome back</h2>
+          <p className="sub">Sign in to your Techyverve account</p>
+
           {error && <div className="err">{error}</div>}
+
           <div className="field">
             <label htmlFor="u">Username</label>
-            <input
-              id="u"
-              className="input"
-              autoComplete="username"
-              autoCapitalize="none"
-              autoCorrect="off"
-              autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <div className="l2-input">
+              <Icon name="user" size={16} />
+              <input
+                id="u"
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoFocus
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
           </div>
+
           <div className="field">
             <label htmlFor="p">Password</label>
-            <input
-              id="p"
-              type="password"
-              className="input"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="l2-input">
+              <Icon name="key" size={16} />
+              <input
+                id="p"
+                type={show ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button type="button" className="l2-show" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'}>
+                {show ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
-          <button className="btn primary" disabled={busy || !username || !password}>
+
+          <button className="btn primary l2-submit" disabled={busy || !username || !password}>
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
+
+          <p className="l2-help">Forgot your password? Ask your superadmin to reset it.</p>
         </form>
-      </div>
+
+        <div className="l2-copy">Techyverve · Internal tool</div>
+      </main>
     </div>
   );
 }

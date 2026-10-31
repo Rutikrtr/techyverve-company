@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Icon } from '@/components/ui';
 
 /** Registers the service worker and shows a small "install the app" banner on phones. */
+/* eslint-disable @next/next/no-img-element */
 export default function PWA() {
   const [deferred, setDeferred] = useState(null);
   const [ios, setIos] = useState(false);
@@ -50,7 +51,7 @@ export default function PWA() {
   if (!show) return null;
   return (
     <div className="install">
-      <div className="install-ic">T</div>
+      <div className="install-ic"><img src="/brand/logo-navy.png" alt="" width="26" height="26" /></div>
       <div className="install-txt">
         <b>Install Techyverve app</b>
         {ios ? (

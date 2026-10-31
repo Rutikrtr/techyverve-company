@@ -102,6 +102,11 @@ export default function CampDetail() {
         )}
       </div>
 
+
+      <button className="fab" onClick={() => setAdding(true)}>
+        <Icon name="plus" size={18} /> Add hotel
+      </button>
+
       {adding && (
         <AddLeadModal
           areas={[{ id: a.id, name: a.name, city: a.city }]}

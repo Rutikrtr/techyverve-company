@@ -130,7 +130,7 @@ export default function CampsPage() {
           </p>
         </div>
         {user.isAdmin && (
-          <button className="btn primary" onClick={() => setModal('new')}>
+          <button className="btn primary keep" onClick={() => setModal('new')}>
             <Icon name="plus" /> New camp
           </button>
         )}

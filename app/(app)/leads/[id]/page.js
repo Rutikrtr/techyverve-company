@@ -257,6 +257,12 @@ export default function LeadDetail() {
 
           <div className="card">
             <div className="card-head"><h2>Location</h2></div>
+            <iframe
+              className="map-frame"
+              title="Hotel location"
+              loading="lazy"
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${l.longitude - 0.004}%2C${l.latitude - 0.003}%2C${l.longitude + 0.004}%2C${l.latitude + 0.003}&layer=mapnik&marker=${l.latitude}%2C${l.longitude}`}
+            />
             <div className="loc ok" style={{ marginBottom: 10 }}>
               <div className="ic"><Icon name="pin" size={14} /></div>
               <div>

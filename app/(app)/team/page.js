@@ -122,7 +122,7 @@ export default function TeamPage() {
           <h1>Team</h1>
           <p>Create logins for your team. Assign them to camps from the Camps page.</p>
         </div>
-        <button className="btn primary" onClick={() => setModal('new')}>
+        <button className="btn primary keep" onClick={() => setModal('new')}>
           <Icon name="plus" /> New member
         </button>
       </div>

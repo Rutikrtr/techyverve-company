@@ -99,6 +99,16 @@ Everyone is signed out automatically only if you also change `AUTH_SECRET`. Exis
 
 ---
 
+## Install as a phone app
+
+Open the Vercel link on the phone:
+- **Android (Chrome):** tap **Install** on the banner, or ⋮ menu → **Install app**.
+- **iPhone (Safari):** tap **Share** → **Add to Home Screen**.
+
+It then opens full screen like a normal app, with no browser bar, and pinch-zoom is turned off. Location must be allowed for the site (or app) the first time you add a hotel.
+
+> Vercel region is set to Mumbai (`bom1`) in `vercel.json`. If your Supabase project is in another region, change it to the nearest one (for example `dub1` for Ireland).
+
 ## Daily use
 
 **Superadmin**
@@ -149,6 +159,6 @@ app/                 pages + API routes (Next.js App Router)
   api/               REST endpoints
 components/          UI pieces (modals, lead form with location, tables)
 lib/                 supabase client, auth, helpers
-supabase/schema.sql  database tables
+supabase/schema.sql  database tables (see supabase/TABLES.md for the list)
 supabase/seed_superadmin.sql
 ```

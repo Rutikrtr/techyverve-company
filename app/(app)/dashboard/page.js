@@ -5,10 +5,11 @@ import { inr, timeAgo, useFetch } from '@/lib/client';
 import { todayStr } from '@/lib/dates';
 import { useUser } from '@/components/User';
 import { Loading, PctBadge, PCT_COLORS, Empty } from '@/components/ui';
+import PullToRefresh from '@/components/PullToRefresh';
 
 export default function Dashboard() {
   const user = useUser();
-  const { data, loading, error } = useFetch('/dashboard?today=' + todayStr());
+  const { data, loading, error, reload } = useFetch('/dashboard?today=' + todayStr());
 
   if (loading) return <Loading />;
   if (error) return <div className="page"><div className="err">{error}</div></div>;
@@ -20,6 +21,7 @@ export default function Dashboard() {
 
   return (
     <div className="page">
+      <PullToRefresh onRefresh={reload} />
       <div className="page-head">
         <div>
           <h1>

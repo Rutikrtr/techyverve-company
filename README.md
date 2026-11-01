@@ -24,7 +24,7 @@ Hotel lead tracking for the Techyverve team.
 Required when adding a lead: camp, hotel name, **hotel photo**, confirmation %, hotel contact, **revisit date** and location. Optional: owner name, price, remark.
 
 - **Photo:** taken with the phone camera and shrunk automatically to about 100-200 KB, then stored in the private Supabase Storage bucket `hotel-photos`. It is shown on the hotel page and as a thumbnail in lists. It can be retaken later.
-- **Revisit date:** Today, Tomorrow or any date. The Hotels list puts **today's revisits at the top**, then groups the rest by date. Use the date bar to jump to a day, tick hotels (or **Select all**) to change their revisit date together, and **Export** to a CSV for selected hotels, the current list, one date, or everything. The CSV opens in Excel / Google Sheets.
+- **Revisit date:** Today, Tomorrow or any date. The Hotels list puts **today's revisits at the top**, then groups the rest by date. Use the date chips (All dates / Today / Tomorrow / Pick date) to jump to a day. **Press and hold** a hotel (or tap **Select**) to start selecting; a bar at the bottom then offers **Select all**, change revisit date, and **Export**. Export also works without selecting: the current list, one date, or everything, as a CSV that opens in Excel / Google Sheets. Pull down on the list to refresh.
 - **Settings:** sign out, change password and a location test.
 
 ---

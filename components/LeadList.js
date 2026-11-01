@@ -9,7 +9,7 @@ import { Empty, Icon, PctBadge } from '@/components/ui';
 
 function Thumb({ lead }) {
   return lead.photo_url ? (
-    <img className="thumb" src={lead.photo_url} alt="" loading="lazy" />
+    <img className="thumb" src={lead.photo_url} alt="" loading="lazy" draggable={false} />
   ) : (
     <span className="thumb none"><Icon name="camera" size={14} /></span>
   );
@@ -28,31 +28,68 @@ function Check({ checked, indeterminate, onChange, label }) {
   );
 }
 
+const HOLD_MS = 450;
+
 /**
- * Hotels grouped by revisit date (Today first). Pass `selected` + `onToggle`
- * (+ `onToggleGroup`) to enable checkboxes.
+ * Hotels grouped by revisit date (Today first).
+ * Selection is hidden until `selecting` is true. Press and hold a hotel (onLongPress) to start.
  */
-export default function LeadList({ leads, showCamp = true, selected, onToggle, onToggleGroup, emptyHint }) {
+export default function LeadList({ leads, showCamp = true, selecting = false, selected, onToggle, onToggleGroup, onLongPress, emptyHint }) {
   const router = useRouter();
   const today = todayStr();
   const groups = useMemo(() => groupLeads(leads, today), [leads, today]);
-  const selectable = Boolean(selected && onToggle);
+  const timer = useRef(null);
+  const origin = useRef(null);
+  const suppressClick = useRef(false);
 
   if (!leads.length) {
     return <Empty icon="list" title="No hotels here" hint={emptyHint || 'Hotels you add will show up here.'} />;
   }
 
+  const cancelHold = () => {
+    clearTimeout(timer.current);
+    timer.current = null;
+  };
+  const press = (lead) =>
+    onLongPress && !selecting
+      ? {
+          onPointerDown: (e) => {
+            origin.current = { x: e.clientX, y: e.clientY };
+            cancelHold();
+            timer.current = setTimeout(() => {
+              suppressClick.current = true;
+              onLongPress(lead.id);
+            }, HOLD_MS);
+          },
+          onPointerMove: (e) => {
+            const o = origin.current;
+            if (o && (Math.abs(e.clientX - o.x) > 8 || Math.abs(e.clientY - o.y) > 8)) cancelHold();
+          },
+          onPointerUp: cancelHold,
+          onPointerCancel: cancelHold,
+          onPointerLeave: cancelHold,
+          onContextMenu: (e) => e.preventDefault(),
+        }
+      : {};
+
+  const onCardClick = (e, lead) => {
+    if (suppressClick.current) {
+      e.preventDefault();
+      suppressClick.current = false;
+      return;
+    }
+    if (selecting) {
+      e.preventDefault();
+      onToggle(lead.id);
+    }
+  };
+
   const groupHead = (g) => {
-    const n = g.leads.filter((l) => selected?.has(l.id)).length;
+    const n = selecting ? g.leads.filter((l) => selected?.has(l.id)).length : 0;
     return (
       <div className={'grp-head ' + g.state}>
-        {selectable && (
-          <Check
-            checked={n === g.leads.length}
-            indeterminate={n > 0}
-            onChange={() => onToggleGroup?.(g.leads)}
-            label={`Select all for ${g.label}`}
-          />
+        {selecting && (
+          <Check checked={n === g.leads.length} indeterminate={n > 0} onChange={() => onToggleGroup?.(g.leads)} label={`Select all for ${g.label}`} />
         )}
         <b>{g.label}</b>
         {g.sub && g.label !== g.sub && <span className="muted">{g.sub}</span>}
@@ -71,34 +108,34 @@ export default function LeadList({ leads, showCamp = true, selected, onToggle, o
           <div key={g.key}>
             {groupHead(g)}
             {g.leads.map((l) => (
-              <div key={l.id} className={'lc' + (selected?.has(l.id) ? ' sel' : '')}>
-                {selectable && <Check checked={selected.has(l.id)} onChange={() => onToggle(l.id)} label={`Select ${l.hotel_name}`} />}
-                <Link href={'/leads/' + l.id} className="lc-main">
+              <div key={l.id} className={'lc' + (selecting ? ' selecting' : '') + (selected?.has(l.id) ? ' sel' : '')}>
+                {selecting && <Check checked={selected.has(l.id)} onChange={() => onToggle(l.id)} label={`Select ${l.hotel_name}`} />}
+                <Link href={'/leads/' + l.id} className="lc-main" onClick={(e) => onCardClick(e, l)} draggable={false} {...press(l)}>
                   <Thumb lead={l} />
                   <div className="lc-body">
                     <div className="top">
                       <div className="name">{l.hotel_name}</div>
                       <PctBadge value={l.confirmation} />
                     </div>
-                    <div className="sub">
-                      {[showCamp && l.areas?.name, l.owner_name].filter(Boolean).join(' · ') || l.creator?.name || ' '}
-                    </div>
+                    <div className="sub">{[showCamp && l.areas?.name, l.owner_name].filter(Boolean).join(' · ') || l.creator?.name || ' '}</div>
                     <div className="sub">
                       {l.contact || 'No contact'}
                       {l.price ? ` · ${inr(l.price)}` : ''}
                     </div>
                   </div>
                 </Link>
-                <div className="lc-act">
-                  {l.contact && (
-                    <a className="btn icon" href={'tel:' + l.contact} aria-label={`Call ${l.hotel_name}`}>
-                      <Icon name="phone" size={15} />
+                {!selecting && (
+                  <div className="lc-act">
+                    {l.contact && (
+                      <a className="btn icon" href={'tel:' + l.contact} aria-label={`Call ${l.hotel_name}`}>
+                        <Icon name="phone" size={15} />
+                      </a>
+                    )}
+                    <a className="btn icon" href={mapsUrl(l.latitude, l.longitude)} target="_blank" rel="noreferrer" aria-label="Open location">
+                      <Icon name="pin" size={15} />
                     </a>
-                  )}
-                  <a className="btn icon" href={mapsUrl(l.latitude, l.longitude)} target="_blank" rel="noreferrer" aria-label="Open location">
-                    <Icon name="pin" size={15} />
-                  </a>
-                </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -110,7 +147,7 @@ export default function LeadList({ leads, showCamp = true, selected, onToggle, o
         <table className="table">
           <thead>
             <tr>
-              {selectable && <th style={{ width: 36 }} />}
+              {selecting && <th style={{ width: 36 }} />}
               <th>Hotel</th>
               <th>Confirmed</th>
               <th>Contact</th>
@@ -124,11 +161,15 @@ export default function LeadList({ leads, showCamp = true, selected, onToggle, o
           {groups.map((g) => (
             <tbody key={g.key}>
               <tr className={'grp-row ' + g.state}>
-                <td colSpan={(selectable ? 1 : 0) + (showCamp ? 8 : 7)}>{groupHead(g)}</td>
+                <td colSpan={(selecting ? 1 : 0) + (showCamp ? 8 : 7)}>{groupHead(g)}</td>
               </tr>
               {g.leads.map((l) => (
-                <tr key={l.id} className={'click' + (selected?.has(l.id) ? ' sel' : '')} onClick={() => router.push('/leads/' + l.id)}>
-                  {selectable && (
+                <tr
+                  key={l.id}
+                  className={'click' + (selected?.has(l.id) ? ' sel' : '')}
+                  onClick={() => (selecting ? onToggle(l.id) : router.push('/leads/' + l.id))}
+                >
+                  {selecting && (
                     <td>
                       <Check checked={selected.has(l.id)} onChange={() => onToggle(l.id)} label={`Select ${l.hotel_name}`} />
                     </td>

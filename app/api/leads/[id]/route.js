@@ -1,6 +1,8 @@
 import { db } from '@/lib/supabase';
 import { ok, bad, withAuth, areaIdsFor, clean, num } from '@/lib/api';
 import { PCTS } from '@/lib/constants';
+import { isDateStr, shortDate } from '@/lib/dates';
+import { removePhotos, withPhotoUrls } from '@/lib/storage';
 
 const SELECT = '*, areas(name), creator:app_users!created_by(name)';
 
@@ -21,7 +23,8 @@ export const GET = withAuth(async (req, { user, params }) => {
     const { data } = await db().from('clients').select('id').eq('lead_id', lead.id).limit(1);
     in_hishob = Boolean(data?.length);
   }
-  return ok({ lead: { ...lead, in_hishob } });
+  const [withUrl] = await withPhotoUrls([lead]);
+  return ok({ lead: { ...withUrl, in_hishob } });
 });
 
 export const PATCH = withAuth(async (req, { user, params }) => {
@@ -52,6 +55,11 @@ export const PATCH = withAuth(async (req, { user, params }) => {
     if (!PCTS.includes(c)) return bad('Invalid confirmation percentage');
     patch.confirmation = c;
   }
+  if (b.revisit_date !== undefined) {
+    const d = clean(b.revisit_date);
+    if (!d || !isDateStr(d)) return bad('Pick a valid revisit date');
+    patch.revisit_date = d;
+  }
   if (b.area_id !== undefined && user.isAdmin) patch.area_id = b.area_id;
 
   if (!Object.keys(patch).length) return bad('Nothing to update');
@@ -60,21 +68,27 @@ export const PATCH = withAuth(async (req, { user, params }) => {
   const { error: e } = await db().from('leads').update(patch).eq('id', lead.id);
   if (e) throw e;
 
+  const notes = [];
   if (patch.confirmation !== undefined && patch.confirmation !== lead.confirmation) {
-    await db().from('lead_remarks').insert({
-      lead_id: lead.id,
-      user_id: user.id,
-      kind: 'system',
-      body: `Confirmation changed ${lead.confirmation}% → ${patch.confirmation}%`,
-    });
+    notes.push(`Confirmation changed ${lead.confirmation}% → ${patch.confirmation}%`);
+  }
+  if (patch.revisit_date !== undefined && patch.revisit_date !== lead.revisit_date) {
+    notes.push(`Revisit date ${lead.revisit_date ? shortDate(lead.revisit_date) : 'not set'} → ${shortDate(patch.revisit_date)}`);
+  }
+  if (notes.length) {
+    await db()
+      .from('lead_remarks')
+      .insert(notes.map((body) => ({ lead_id: lead.id, user_id: user.id, kind: 'system', body })));
   }
   return ok({ ok: true });
 });
 
 export const DELETE = withAuth(
   async (req, { user, params }) => {
+    const { data } = await db().from('leads').select('photo_path').eq('id', params.id).eq('company_id', user.companyId).maybeSingle();
     const { error } = await db().from('leads').delete().eq('id', params.id).eq('company_id', user.companyId);
     if (error) throw error;
+    await removePhotos([data?.photo_path]);
     return ok({ ok: true });
   },
   { admin: true }

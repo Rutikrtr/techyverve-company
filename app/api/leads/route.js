@@ -1,6 +1,9 @@
+import { randomUUID } from 'crypto';
 import { db } from '@/lib/supabase';
 import { ok, bad, withAuth, areaIdsFor, clean, num } from '@/lib/api';
 import { PCTS } from '@/lib/constants';
+import { isDateStr } from '@/lib/dates';
+import { removePhotos, uploadPhoto, withPhotoUrls } from '@/lib/storage';
 
 const SELECT = '*, areas(name), creator:app_users!created_by(name)';
 
@@ -23,29 +26,44 @@ export const GET = withAuth(async (req, { user }) => {
   if (min) q = q.gte('confirmation', min);
   const exact = Number(url.searchParams.get('pct'));
   if (exact) q = q.eq('confirmation', exact);
+  const date = url.searchParams.get('date');
+  if (date) {
+    if (!isDateStr(date)) return bad('Invalid date');
+    q = q.eq('revisit_date', date);
+  }
   if (url.searchParams.get('mine') === '1') q = q.eq('created_by', user.id);
   const search = (url.searchParams.get('q') || '').trim().replace(/[%,()]/g, ' ');
   if (search) q = q.or(`hotel_name.ilike.%${search}%,contact.ilike.%${search}%,owner_name.ilike.%${search}%`);
 
   const { data, error } = await q;
   if (error) throw error;
-  return ok({ leads: data });
+  return ok({ leads: await withPhotoUrls(data) });
 });
 
+// Create a lead. Sent as multipart/form-data because it carries the hotel photo.
 export const POST = withAuth(async (req, { user }) => {
-  const b = await req.json().catch(() => ({}));
+  let form;
+  try {
+    form = await req.formData();
+  } catch {
+    return bad('Could not read the form. Please try again.');
+  }
+  const f = (k) => form.get(k);
 
-  const hotel_name = clean(b.hotel_name);
-  const contact = clean(b.contact);
-  const confirmation = Number(b.confirmation);
-  const latitude = num(b.latitude);
-  const longitude = num(b.longitude);
-  const price = num(b.price);
+  const hotel_name = clean(f('hotel_name'));
+  const contact = clean(f('contact'));
+  const confirmation = Number(f('confirmation'));
+  const latitude = num(f('latitude'));
+  const longitude = num(f('longitude'));
+  const price = num(f('price'));
+  const revisit_date = clean(f('revisit_date'));
+  const area_id = clean(f('area_id'));
 
   if (!hotel_name) return bad('Hotel name is required');
   if (!contact) return bad('Hotel contact number is required');
   if (!PCTS.includes(confirmation)) return bad('Pick a confirmation percentage (10, 30, 50, 70, 90 or 100)');
-  if (!b.area_id) return bad('Pick a camp');
+  if (!area_id) return bad('Pick a camp');
+  if (!revisit_date || !isDateStr(revisit_date)) return bad('Pick a revisit date');
   if (latitude === null || longitude === null || Number.isNaN(latitude) || Number.isNaN(longitude)) {
     return bad('Location is required. Turn on location on your phone and try again.');
   }
@@ -53,30 +71,36 @@ export const POST = withAuth(async (req, { user }) => {
   if (Number.isNaN(price) || (price !== null && price < 0)) return bad('Price must be a positive number');
 
   const ids = await areaIdsFor(user);
-  if (ids && !ids.includes(b.area_id)) return bad('You are not assigned to this camp', 403);
+  if (ids && !ids.includes(area_id)) return bad('You are not assigned to this camp', 403);
 
-  const { data: lead, error } = await db()
-    .from('leads')
-    .insert({
-      company_id: user.companyId,
-      area_id: b.area_id,
-      created_by: user.id,
-      hotel_name,
-      contact,
-      owner_name: clean(b.owner_name),
-      price,
-      confirmation,
-      latitude,
-      longitude,
-      location_accuracy: num(b.location_accuracy),
-    })
-    .select('id')
-    .single();
-  if (error) throw error;
+  const id = randomUUID();
+  const photo = await uploadPhoto(user.companyId, id, f('photo'));
+  if (photo.error) return bad(photo.error);
 
-  const remark = clean(b.remark);
-  if (remark) {
-    await db().from('lead_remarks').insert({ lead_id: lead.id, user_id: user.id, body: remark, kind: 'note' });
+  const { error } = await db().from('leads').insert({
+    id,
+    company_id: user.companyId,
+    area_id,
+    created_by: user.id,
+    hotel_name,
+    contact,
+    owner_name: clean(f('owner_name')),
+    price,
+    confirmation,
+    latitude,
+    longitude,
+    location_accuracy: num(f('location_accuracy')),
+    photo_path: photo.path,
+    revisit_date,
+  });
+  if (error) {
+    await removePhotos([photo.path]); // don't leave an orphan photo behind
+    throw error;
   }
-  return ok({ id: lead.id }, 201);
+
+  const remark = clean(f('remark'));
+  if (remark) {
+    await db().from('lead_remarks').insert({ lead_id: id, user_id: user.id, body: remark, kind: 'note' });
+  }
+  return ok({ id }, 201);
 });

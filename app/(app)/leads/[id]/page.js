@@ -1,11 +1,15 @@
 'use client';
-import { useState } from 'react';
+/* eslint-disable @next/next/no-img-element */
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { api, fmtDate, initials, inr, mapsUrl, timeAgo, useFetch } from '@/lib/client';
 import { useUser } from '@/components/User';
 import { useToast } from '@/components/Toast';
 import ClientModal from '@/components/ClientModal';
+import RevisitModal from '@/components/RevisitModal';
+import { compressImage } from '@/lib/image';
+import { dayLabel, todayStr } from '@/lib/dates';
 import { Empty, Icon, Loading, Modal, PctBadge, PctPicker } from '@/components/ui';
 
 function EditModal({ lead, onClose, onSaved }) {
@@ -80,6 +84,9 @@ export default function LeadDetail() {
   const [savingPct, setSavingPct] = useState(false);
   const [editing, setEditing] = useState(false);
   const [toHishob, setToHishob] = useState(false);
+  const [revisit, setRevisit] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const photoInput = useRef(null);
 
   if (lead.loading) return <Loading />;
   if (lead.error)
@@ -103,6 +110,32 @@ export default function LeadDetail() {
       toast(e.message, 'error');
     } finally {
       setSavingPct(false);
+    }
+  }
+
+  async function saveRevisit(revisit_date) {
+    await api('/leads/' + id, { method: 'PATCH', body: { revisit_date } });
+    toast('Revisit date updated');
+    setRevisit(false);
+    await Promise.all([lead.reload(), remarks.reload()]);
+  }
+
+  async function retake(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPhotoBusy(true);
+    try {
+      const small = await compressImage(file);
+      const body = new FormData();
+      body.append('photo', small);
+      await api('/leads/' + id + '/photo', { method: 'POST', body });
+      toast('Photo updated');
+      await Promise.all([lead.reload(), remarks.reload()]);
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      setPhotoBusy(false);
     }
   }
 
@@ -166,6 +199,24 @@ export default function LeadDetail() {
             </button>
           )}
         </div>
+      </div>
+
+      <input ref={photoInput} type="file" accept="image/*" capture="environment" onChange={retake} hidden />
+      <div className={'hero-photo' + (l.photo_url ? '' : ' empty')}>
+        {l.photo_url ? (
+          <a href={l.photo_url} target="_blank" rel="noreferrer" title="Open full photo">
+            <img src={l.photo_url} alt={l.hotel_name} />
+          </a>
+        ) : (
+          <div className="hero-none">
+            <Icon name="camera" size={22} />
+            <b>No photo yet</b>
+            <span>This hotel was added before photos were required.</span>
+          </div>
+        )}
+        <button className="btn sm hero-btn" onClick={() => photoInput.current?.click()} disabled={photoBusy}>
+          <Icon name="camera" size={14} /> {photoBusy ? 'Uploading…' : l.photo_url ? 'Retake' : 'Add photo'}
+        </button>
       </div>
 
       <div className="grid g-main">
@@ -248,6 +299,17 @@ export default function LeadDetail() {
               </dd>
               <dt>Owner</dt>
               <dd>{l.owner_name || <span className="muted">Not added</span>}</dd>
+              <dt>Revisit</dt>
+              <dd>
+                <span className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
+                  <span className={l.revisit_date && l.revisit_date < todayStr() && l.confirmation < 100 ? 'neg' : ''}>
+                    {l.revisit_date ? dayLabel(l.revisit_date) : <span className="muted">Not set</span>}
+                  </span>
+                  <button className="btn sm" onClick={() => setRevisit(true)}>
+                    <Icon name="calendar" size={13} /> Change
+                  </button>
+                </span>
+              </dd>
               <dt>Price</dt>
               <dd>{l.price ? inr(l.price) : <span className="muted">Not added</span>}</dd>
               <dt>Added</dt>
@@ -299,6 +361,9 @@ export default function LeadDetail() {
             lead.reload();
           }}
         />
+      )}
+      {revisit && (
+        <RevisitModal initial={l.revisit_date || todayStr()} onSave={saveRevisit} onClose={() => setRevisit(false)} />
       )}
       {toHishob && (
         <ClientModal

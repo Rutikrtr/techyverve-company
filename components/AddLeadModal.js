@@ -2,6 +2,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/client';
 import { Icon, Modal, PctPicker } from '@/components/ui';
+import PhotoPicker from '@/components/PhotoPicker';
+import RevisitPicker from '@/components/RevisitPicker';
+import { todayStr } from '@/lib/dates';
 import { useToast } from '@/components/Toast';
 
 /** Asks the phone for its location. Lead can't be saved until it succeeds. */
@@ -53,26 +56,25 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
     owner_name: '',
     price: '',
     remark: '',
+    revisit_date: todayStr(),
   });
+  const [photo, setPhoto] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const ready = loc.status === 'ok' && form.area_id && form.hotel_name.trim() && form.contact.trim();
+  const ready = loc.status === 'ok' && form.area_id && form.hotel_name.trim() && form.contact.trim() && photo && form.revisit_date;
 
   async function save() {
     setError('');
     setBusy(true);
     try {
-      const { id } = await api('/leads', {
-        method: 'POST',
-        body: {
-          ...form,
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          location_accuracy: loc.accuracy,
-        },
-      });
+      const body = new FormData();
+      Object.entries({ ...form, latitude: loc.latitude, longitude: loc.longitude, location_accuracy: loc.accuracy }).forEach(([k, v]) =>
+        body.append(k, v ?? '')
+      );
+      body.append('photo', photo);
+      const { id } = await api('/leads', { method: 'POST', body });
       toast('Lead added');
       onSaved(id);
     } catch (e) {
@@ -160,6 +162,11 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
       </div>
 
       <div className="field">
+        <span className="label-txt">Hotel photo</span>
+        <PhotoPicker value={photo} onChange={setPhoto} />
+      </div>
+
+      <div className="field">
         <span className="label-txt">How sure is the confirmation?</span>
         <PctPicker value={form.confirmation} onChange={(confirmation) => setForm((f) => ({ ...f, confirmation }))} />
       </div>
@@ -175,6 +182,11 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
           </label>
           <input id="ow" className="input" value={form.owner_name} onChange={set('owner_name')} />
         </div>
+      </div>
+
+      <div className="field">
+        <span className="label-txt">Revisit date</span>
+        <RevisitPicker value={form.revisit_date} onChange={(revisit_date) => setForm((f) => ({ ...f, revisit_date }))} min={todayStr()} />
       </div>
 
       <div className="field">

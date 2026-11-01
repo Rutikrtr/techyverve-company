@@ -2,17 +2,18 @@
 import Link from 'next/link';
 import { PCTS } from '@/lib/constants';
 import { inr, timeAgo, useFetch } from '@/lib/client';
+import { todayStr } from '@/lib/dates';
 import { useUser } from '@/components/User';
 import { Loading, PctBadge, PCT_COLORS, Empty } from '@/components/ui';
 
 export default function Dashboard() {
   const user = useUser();
-  const { data, loading, error } = useFetch('/dashboard');
+  const { data, loading, error } = useFetch('/dashboard?today=' + todayStr());
 
   if (loading) return <Loading />;
   if (error) return <div className="page"><div className="err">{error}</div></div>;
 
-  const { stats, pipeline, recent, team, hishob } = data;
+  const { stats, pipeline, recent, team, hishob, revisits } = data;
   const max = Math.max(1, ...Object.values(pipeline));
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -71,6 +72,43 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <div className="card flush mt">
+        <div className="card-head">
+          <div className="row" style={{ gap: 8 }}>
+            <h2>Revisit today</h2>
+            <span className="badge blue">{revisits.today}</span>
+            {revisits.overdue > 0 && <span className="badge off">{revisits.overdue} overdue</span>}
+          </div>
+          <Link href={'/leads?date=' + revisits.date} className="btn sm ghost">
+            See all
+          </Link>
+        </div>
+        {revisits.list.length === 0 ? (
+          <Empty icon="calendar" title="No revisits today" hint="Hotels with today as the revisit date appear here." />
+        ) : (
+          <div className="table-wrap">
+            <table className="table">
+              <tbody>
+                {revisits.list.map((l) => (
+                  <tr key={l.id} className="click" onClick={() => (window.location.href = '/leads/' + l.id)}>
+                    <td>
+                      <div className="cell-title">{l.hotel_name}</div>
+                      <div className="cell-sub">{l.areas?.name}{l.contact ? ` · ${l.contact}` : ''}</div>
+                    </td>
+                    <td><PctBadge value={l.confirmation} /></td>
+                    <td className="right">
+                      {l.contact && (
+                        <a className="btn sm" href={'tel:' + l.contact} onClick={(e) => e.stopPropagation()}>Call</a>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       <div className="grid g-main mt">
         <div className="card flush">

@@ -59,12 +59,15 @@ create table if not exists leads (
   latitude           double precision not null,  -- captured from the phone automatically
   longitude          double precision not null,
   location_accuracy  real,                       -- metres
+  photo_path         text,                       -- file in storage bucket 'hotel-photos' (required by the app)
+  revisit_date       date,                       -- when to visit again (required by the app)
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
 create index if not exists leads_area_idx    on leads (area_id);
 create index if not exists leads_creator_idx on leads (created_by);
 create index if not exists leads_conf_idx    on leads (confirmation);
+create index if not exists leads_revisit_idx on leads (revisit_date);
 
 -- ---------- Remarks (team notes on a lead) ----------
 create table if not exists lead_remarks (
@@ -105,6 +108,12 @@ create table if not exists expenses (
   created_at  timestamptz not null default now()
 );
 create index if not exists expenses_date_idx on expenses (spent_on desc);
+
+-- ---------- Photo storage ----------
+-- Private bucket for hotel photos (max 2 MB each, images only).
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('hotel-photos', 'hotel-photos', false, 2097152, array['image/jpeg','image/png','image/webp'])
+on conflict (id) do nothing;
 
 -- ---------- Security ----------
 -- The app talks to the database ONLY from the server using the service-role key.

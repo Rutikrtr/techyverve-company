@@ -1,5 +1,6 @@
 import { db } from '@/lib/supabase';
 import { ok, bad, withAuth, areaIdsFor, clean } from '@/lib/api';
+import { removePhotos } from '@/lib/storage';
 
 export const GET = withAuth(async (req, { user, params }) => {
   const ids = await areaIdsFor(user);
@@ -71,8 +72,10 @@ export const PATCH = withAuth(
 
 export const DELETE = withAuth(
   async (req, { user, params }) => {
+    const { data: photos } = await db().from('leads').select('photo_path').eq('area_id', params.id).eq('company_id', user.companyId);
     const { error } = await db().from('areas').delete().eq('id', params.id).eq('company_id', user.companyId);
     if (error) throw error;
+    await removePhotos((photos || []).map((p) => p.photo_path));
     return ok({ ok: true });
   },
   { admin: true }

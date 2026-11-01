@@ -29,21 +29,17 @@ export default function AppLayout({ children }) {
   const items = [
     { href: '/dashboard', label: 'Dashboard', icon: 'home' },
     { href: '/camps', label: user.isAdmin ? 'Camps' : 'My camps', icon: 'map' },
-    { href: '/leads', label: user.isAdmin ? 'All leads' : 'Leads', icon: 'list' },
+    { href: '/leads', label: user.isAdmin ? 'All hotels' : 'Hotels', icon: 'list' },
     ...(user.isAdmin
       ? [
           { href: '/team', label: 'Team', icon: 'users', group: 'Manage' },
           { href: '/hishob', label: 'Hishob', icon: 'book' },
         ]
       : []),
+    { href: '/settings', label: 'Settings', icon: 'settings', group: 'Account' },
   ];
 
   const active = (href) => path === href || path.startsWith(href + '/');
-
-  async function logout() {
-    await api('/auth/logout', { method: 'POST' }).catch(() => {});
-    router.replace('/login');
-  }
 
   return (
     <UserCtx.Provider value={user}>
@@ -62,16 +58,14 @@ export default function AppLayout({ children }) {
               </div>
             ))}
           </nav>
-          <div className="sidebar-foot">
+          <Link href="/settings" className="sidebar-foot" title="Settings">
             <div className="avatar">{initials(user.name)}</div>
             <div className="who">
               <b>{user.name}</b>
               <span>{user.isAdmin ? 'Superadmin' : 'Team member'}</span>
             </div>
-            <button className="btn icon ghost" onClick={logout} title="Sign out" aria-label="Sign out">
-              <Icon name="logout" />
-            </button>
-          </div>
+            <Icon name="settings" size={15} />
+          </Link>
         </aside>
 
         <main className="main">
@@ -89,10 +83,6 @@ export default function AppLayout({ children }) {
               {i.label}
             </Link>
           ))}
-          <button onClick={logout}>
-            <Icon name="logout" size={19} />
-            Sign out
-          </button>
         </nav>
       </div>
     </UserCtx.Provider>

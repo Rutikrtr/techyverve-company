@@ -1,8 +1,11 @@
 import { db } from '@/lib/supabase';
 import { ok, withAuth, areaIdsFor } from '@/lib/api';
 import { PCTS } from '@/lib/constants';
+import { isDateStr, todayStr } from '@/lib/dates';
 
 export const GET = withAuth(async (req, { user }) => {
+  const todayParam = new URL(req.url).searchParams.get('today');
+  const today = isDateStr(todayParam) ? todayParam : todayStr();
   const ids = await areaIdsFor(user);
 
   let leads = [];
@@ -10,7 +13,7 @@ export const GET = withAuth(async (req, { user }) => {
   if (!ids || ids.length) {
     let lq = db()
       .from('leads')
-      .select('id, hotel_name, confirmation, created_by, created_at, areas(name), creator:app_users!created_by(name)')
+      .select('id, hotel_name, confirmation, created_by, created_at, revisit_date, contact, areas(name), creator:app_users!created_by(name)')
       .eq('company_id', user.companyId)
       .order('created_at', { ascending: false })
       .limit(2000);
@@ -38,6 +41,12 @@ export const GET = withAuth(async (req, { user }) => {
     },
     pipeline,
     recent: leads.slice(0, 6),
+    revisits: {
+      today: leads.filter((l) => l.revisit_date === today).length,
+      overdue: leads.filter((l) => l.revisit_date && l.revisit_date < today && l.confirmation < 100).length,
+      list: leads.filter((l) => l.revisit_date === today).slice(0, 6),
+      date: today,
+    },
   };
 
   if (user.isAdmin) {

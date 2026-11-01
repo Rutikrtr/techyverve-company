@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { PCTS } from '@/lib/constants';
 import { initials, useFetch } from '@/lib/client';
 import AddLeadModal from '@/components/AddLeadModal';
-import LeadTable from '@/components/LeadTable';
+import LeadList from '@/components/LeadList';
 import { Icon, Loading } from '@/components/ui';
 
 export default function CampDetail() {
@@ -98,7 +98,7 @@ export default function CampDetail() {
         {leads.loading && !leads.data ? (
           <Loading />
         ) : (
-          <LeadTable leads={leads.data?.leads || []} showCamp={false} emptyHint="Tap “Add hotel” to log the first one." />
+          <LeadList leads={leads.data?.leads || []} showCamp={false} emptyHint="Tap “Add hotel” to log the first one." />
         )}
       </div>
 

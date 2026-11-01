@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { api, fmtDate, initials, useFetch } from '@/lib/client';
 import { useToast } from '@/components/Toast';
 import { Empty, Icon, Loading, Modal } from '@/components/ui';
+import { isTouch } from '@/lib/dom';
 
 function MemberModal({ member, onClose, onSaved }) {
   const toast = useToast();
@@ -73,7 +74,7 @@ function MemberModal({ member, onClose, onSaved }) {
       {error && <div className="err">{error}</div>}
       <div className="field">
         <label>Full name</label>
-        <input className="input" value={form.name} onChange={set('name')} autoFocus />
+        <input className="input" value={form.name} onChange={set('name')} autoFocus={!isTouch()} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="form-grid">
         <div className="field">
@@ -85,17 +86,16 @@ function MemberModal({ member, onClose, onSaved }) {
             disabled={Boolean(member)}
             autoCapitalize="none"
             autoCorrect="off"
-            placeholder="e.g. amit.k"
-          />
+            placeholder="e.g. amit.k" enterKeyHint="next" autoComplete="off" />
         </div>
         <div className="field">
           <label>Phone <span className="opt">(optional)</span></label>
-          <input className="input" type="tel" value={form.phone} onChange={set('phone')} />
+          <input className="input" type="tel" value={form.phone} onChange={set('phone')} inputMode="tel" autoComplete="off" enterKeyHint="next" />
         </div>
       </div>
       <div className="field">
         <label>{member ? 'Reset password' : 'Password'} {member && <span className="opt">(leave empty to keep current)</span>}</label>
-        <input className="input" type="text" autoComplete="new-password" value={form.password} onChange={set('password')} placeholder="At least 6 characters" />
+        <input className="input" type="text" autoComplete="new-password" value={form.password} onChange={set('password')} placeholder="At least 6 characters" enterKeyHint="next" />
       </div>
       {member && (
         <label className={'check' + (form.active ? ' on' : '')}>

@@ -35,16 +35,16 @@ function PasswordCard() {
       {error && <div className="err">{error}</div>}
       <div className="field">
         <label>Current password</label>
-        <input className="input" type="password" autoComplete="current-password" value={form.current} onChange={set('current')} />
+        <input className="input" type="password" autoComplete="current-password" value={form.current} onChange={set('current')} enterKeyHint="next" />
       </div>
       <div className="form-grid">
         <div className="field">
           <label>New password</label>
-          <input className="input" type="password" autoComplete="new-password" value={form.next} onChange={set('next')} placeholder="At least 6 characters" />
+          <input className="input" type="password" autoComplete="new-password" value={form.next} onChange={set('next')} placeholder="At least 6 characters" enterKeyHint="next" />
         </div>
         <div className="field">
           <label>Repeat new password</label>
-          <input className="input" type="password" autoComplete="new-password" value={form.again} onChange={set('again')} />
+          <input className="input" type="password" autoComplete="new-password" value={form.again} onChange={set('again')} enterKeyHint="next" />
         </div>
       </div>
       <button className="btn primary" disabled={busy || !form.current || !form.next || !form.again}>

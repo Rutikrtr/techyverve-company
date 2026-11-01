@@ -1,5 +1,6 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { haptic } from '@/lib/haptic';
 import { PCTS } from '@/lib/constants';
 
 export const PCT_COLORS = { 10: '#8b99b2', 30: '#ea6a0a', 50: '#c99a00', 70: '#2560ff', 90: '#6d28d9', 100: '#16a34a' };
@@ -64,7 +65,10 @@ export function PctPicker({ value, onChange, disabled }) {
           className={'pct-opt' + (value === p ? ' on' : '')}
           style={{ '--c': PCT_COLORS[p] }}
           disabled={disabled}
-          onClick={() => onChange(p)}
+          onClick={() => {
+            haptic(8);
+            onChange(p);
+          }}
         >
           {p}%
         </button>
@@ -95,6 +99,10 @@ export function Loading() {
 }
 
 export function Modal({ title, onClose, children, footer, wide }) {
+  const [drag, setDrag] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const startY = useRef(null);
+
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
@@ -106,14 +114,42 @@ export function Modal({ title, onClose, children, footer, wide }) {
     };
   }, [onClose]);
 
+  // Phone: drag the top of the sheet down to close it
+  const onTouchStart = (e) => {
+    startY.current = e.touches[0].clientY;
+    setDragging(true);
+  };
+  const onTouchMove = (e) => {
+    if (startY.current === null) return;
+    setDrag(Math.max(0, e.touches[0].clientY - startY.current));
+  };
+  const onTouchEnd = () => {
+    if (startY.current === null) return;
+    startY.current = null;
+    setDragging(false);
+    if (drag > 110) {
+      haptic(10);
+      onClose();
+    } else setDrag(0);
+  };
+
   return (
     <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={'modal' + (wide ? ' wide' : '')} role="dialog" aria-modal="true" aria-label={title}>
-        <div className="modal-head">
-          <h2>{title}</h2>
-          <button className="btn icon ghost" onClick={onClose} aria-label="Close">
-            <Icon name="x" />
-          </button>
+      <div
+        className={'modal' + (wide ? ' wide' : '')}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        style={drag ? { transform: `translateY(${drag}px)`, transition: dragging ? 'none' : undefined } : undefined}
+      >
+        <div className="sheet-grab" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onTouchCancel={onTouchEnd}>
+          <span className="sheet-handle" />
+          <div className="modal-head">
+            <h2>{title}</h2>
+            <button className="btn icon ghost" onClick={onClose} aria-label="Close" onTouchStart={(e) => e.stopPropagation()}>
+              <Icon name="x" />
+            </button>
+          </div>
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}

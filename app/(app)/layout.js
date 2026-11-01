@@ -6,6 +6,7 @@ import { api, initials } from '@/lib/client';
 import { UserCtx } from '@/components/User';
 import { Icon, Loading } from '@/components/ui';
 import { Brand } from '@/components/Logo';
+import { haptic } from '@/lib/haptic';
 
 export default function AppLayout({ children }) {
   const router = useRouter();
@@ -78,7 +79,7 @@ export default function AppLayout({ children }) {
 
         <nav className="bottomnav">
           {items.map((i) => (
-            <Link key={i.href} href={i.href} className={active(i.href) ? 'active' : ''}>
+            <Link key={i.href} href={i.href} className={active(i.href) ? 'active' : ''} onClick={() => haptic(6)}>
               <Icon name={i.icon} size={19} />
               {i.label}
             </Link>

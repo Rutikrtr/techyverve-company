@@ -115,6 +115,13 @@ It then opens full screen like a normal app, with no browser bar, and pinch-zoom
 
 > Vercel region is set to Mumbai (`bom1`) in `vercel.json`. If your Supabase project is in another region, change it to the nearest one (for example `dub1` for Ireland).
 
+## Phone-app feel
+
+- Each field opens the right keyboard (number pad for phone and price, capital letters for names, **Next** / **Go** on the Enter key). Enter moves to the next field and closes the keyboard on the last one.
+- Forms open as bottom sheets that stay above the keyboard; drag the top of a sheet down to close it.
+- While you type, the bottom bar and floating buttons hide so nothing covers the form.
+- Short vibrations on Android for selecting, picking a %, and saving. Pull down to refresh.
+
 ## Daily use
 
 **Superadmin**

@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useCallback, useContext, useState } from 'react';
+import { haptic } from '@/lib/haptic';
 
 const ToastCtx = createContext(() => {});
 export const useToast = () => useContext(ToastCtx);
@@ -9,6 +10,7 @@ export function ToastProvider({ children }) {
 
   const push = useCallback((message, type = 'ok') => {
     const id = Math.random().toString(36).slice(2);
+    haptic(type === 'error' ? 40 : 10);
     setItems((t) => [...t, { id, message, type }]);
     setTimeout(() => setItems((t) => t.filter((x) => x.id !== id)), 3200);
   }, []);

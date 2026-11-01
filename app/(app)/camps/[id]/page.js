@@ -92,7 +92,7 @@ export default function CampDetail() {
           </div>
           <div className="search">
             <Icon name="search" size={14} />
-            <input className="input" placeholder="Search hotel, owner, contact" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input className="input" placeholder="Search hotel, owner, contact" value={q} onChange={(e) => setQ(e.target.value)} type="search" inputMode="search" enterKeyHint="search" data-enter-blur="1" autoComplete="off" />
           </div>
         </div>
         {leads.loading && !leads.data ? (

@@ -1,6 +1,7 @@
 import './globals.css';
 import { ToastProvider } from '@/components/Toast';
 import PWA from '@/components/PWA';
+import KeyboardFix from '@/components/KeyboardFix';
 
 export const metadata = {
   title: 'Techyverve CRM',
@@ -18,6 +19,7 @@ export const viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
   themeColor: '#04123f',
 };
 
@@ -35,6 +37,7 @@ export default function RootLayout({ children }) {
       <body>
         <ToastProvider>{children}</ToastProvider>
         <PWA />
+        <KeyboardFix />
       </body>
     </html>
   );

@@ -148,7 +148,7 @@ export default function LeadsPage() {
           <div className="row searchrow">
             <div className="search">
               <Icon name="search" size={14} />
-              <input className="input" placeholder="Search hotel, owner, contact" value={q} onChange={(e) => setQ(e.target.value)} />
+              <input className="input" placeholder="Search hotel, owner, contact" value={q} onChange={(e) => setQ(e.target.value)} type="search" inputMode="search" enterKeyHint="search" data-enter-blur="1" autoComplete="off" />
             </div>
             <button className={'btn filters-btn' + (filterCount ? ' active' : '')} onClick={() => setShowFilters((v) => !v)} aria-expanded={showFilters}>
               <Icon name="filter" size={15} /> Filters{filterCount ? <span className="dot">{filterCount}</span> : null}

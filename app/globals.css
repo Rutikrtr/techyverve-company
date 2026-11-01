@@ -641,3 +641,45 @@ a.sidebar-foot:hover { background: var(--bg); }
   .filter-panel .chips.scroll { margin: 0; padding: 0; }
   .toasts { bottom: calc(142px + env(safe-area-inset-bottom)) !important; }
 }
+
+/* ======================= Phone-app feel ======================= */
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+input[type=search] { -webkit-appearance: none; appearance: none; }
+input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+
+/* sheets follow the visible area (above the keyboard) */
+.overlay { inset: auto; left: 0; right: 0; top: var(--vvt, 0px); height: var(--vvh, 100dvh); }
+.modal-body { overscroll-behavior: contain; scroll-padding: 24px; }
+.sheet-handle { display: none; }
+.sheet-grab { touch-action: none; }
+.modal { transition: transform .2s ease; }
+
+/* chrome should not be selectable; real content and fields still are */
+button, .btn, .chip, .nav a, .bottomnav, .tab, .pct-opt, .seg, .check, .cb, .card-head h2, .topbar { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
+
+/* pressed feedback */
+.btn, .chip, .pct-opt, .seg button, .seg-date, .check, .bottomnav a, .camp, .tab { transition: transform .08s ease, background .15s, border-color .15s, box-shadow .15s, color .15s; }
+.chip:active, .pct-opt:active, .seg button:active, .seg-date:active, .check:active, .tab:active { transform: scale(.96); }
+.bottomnav a:active { transform: scale(.9); opacity: .8; }
+.camp:active { transform: scale(.985); }
+.btn:active { transform: scale(.97); }
+
+/* keyboard is open: get the bars out of the way */
+.kb-open .bottomnav, .kb-open .fab, .kb-open .install, .kb-open .selbar { display: none !important; }
+.kb-open .page { padding-bottom: 24px; }
+
+@media (max-width: 760px) {
+  .overlay { align-items: flex-end; }
+  .modal, .modal.wide { max-height: 94%; }
+  .modal-head { padding: 6px 12px 10px 16px; border-bottom: 0; }
+  .modal-head h2 { font-size: 16px; }
+  .sheet-handle { display: block; width: 38px; height: 4px; border-radius: 2px; background: #cdd3de; margin: 8px auto 2px; }
+  .sheet-grab { border-bottom: 1px solid var(--line-soft); }
+  .modal-foot .btn { height: 44px; flex: 1; }
+  .modal-foot .btn.danger { flex: 0 0 auto; }
+  .modal-foot { gap: 10px; }
+  .field > label, .label-txt { font-size: 13px; }
+  .field { margin-bottom: 14px; }
+}

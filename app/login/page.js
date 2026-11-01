@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/client';
 import { Icon } from '@/components/ui';
 import Logo, { Brand } from '@/components/Logo';
+import { isTouch } from '@/lib/dom';
 
 const FEATURES = [
   { icon: 'pin', title: 'Live location on every lead', text: 'Each hotel is saved with the exact spot, straight from the phone.' },
@@ -18,6 +19,11 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // desktop: focus the username; phone: leave the keyboard closed until the user taps a field
+  useEffect(() => {
+    if (!isTouch()) document.getElementById('u')?.focus();
+  }, []);
 
   async function submit(e) {
     e.preventDefault();
@@ -83,7 +89,8 @@ export default function LoginPage() {
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
-                autoFocus
+                enterKeyHint="next"
+                
                 placeholder="Enter your username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -99,6 +106,7 @@ export default function LoginPage() {
                 id="p"
                 type={show ? 'text' : 'password'}
                 autoComplete="current-password"
+                enterKeyHint="go"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

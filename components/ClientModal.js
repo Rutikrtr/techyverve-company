@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { api, useFetch } from '@/lib/client';
 import { Icon, Modal } from '@/components/ui';
 import { useToast } from '@/components/Toast';
+import { isTouch } from '@/lib/dom';
 
 /**
  * Add / edit a confirmed client (hotel) in the hishob.
@@ -110,30 +111,30 @@ export default function ClientModal({ client, prefill, onClose, onSaved }) {
 
       <div className="field">
         <label>Hotel name</label>
-        <input className="input" value={form.hotel_name} onChange={set('hotel_name')} autoFocus />
+        <input className="input" value={form.hotel_name} onChange={set('hotel_name')} autoFocus={!isTouch()} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="form-grid">
         <div className="field">
           <label>
             Owner <span className="opt">(optional)</span>
           </label>
-          <input className="input" value={form.owner_name} onChange={set('owner_name')} />
+          <input className="input" value={form.owner_name} onChange={set('owner_name')} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
         </div>
         <div className="field">
           <label>
             Contact <span className="opt">(optional)</span>
           </label>
-          <input className="input" type="tel" value={form.contact} onChange={set('contact')} />
+          <input className="input" type="tel" value={form.contact} onChange={set('contact')} inputMode="tel" autoComplete="off" enterKeyHint="next" />
         </div>
         <div className="field">
           <label>Price given by client (₹)</label>
-          <input className="input" type="number" inputMode="decimal" min="0" value={form.given_price} onChange={set('given_price')} />
+          <input className="input" type="number" inputMode="decimal" min="0" value={form.given_price} onChange={set('given_price')} enterKeyHint="next" />
         </div>
         <div className="field">
           <label>
             Received so far (₹) <span className="opt">(optional)</span>
           </label>
-          <input className="input" type="number" inputMode="decimal" min="0" value={form.received} onChange={set('received')} />
+          <input className="input" type="number" inputMode="decimal" min="0" value={form.received} onChange={set('received')} enterKeyHint="next" />
         </div>
         <div className="field">
           <label>Confirmed on</label>

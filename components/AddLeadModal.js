@@ -6,6 +6,7 @@ import PhotoPicker from '@/components/PhotoPicker';
 import RevisitPicker from '@/components/RevisitPicker';
 import { todayStr } from '@/lib/dates';
 import { useToast } from '@/components/Toast';
+import { isTouch } from '@/lib/dom';
 
 /** Asks the phone for its location. Lead can't be saved until it succeeds. */
 function useLocation() {
@@ -158,7 +159,7 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
 
       <div className="field">
         <label htmlFor="hn">Hotel name</label>
-        <input id="hn" className="input" value={form.hotel_name} onChange={set('hotel_name')} placeholder="e.g. Hotel Sai Palace" autoFocus />
+        <input id="hn" className="input" value={form.hotel_name} onChange={set('hotel_name')} placeholder="e.g. Hotel Sai Palace" autoFocus={!isTouch()} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
 
       <div className="field">
@@ -174,13 +175,13 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
       <div className="form-grid">
         <div className="field">
           <label htmlFor="ct">Hotel contact</label>
-          <input id="ct" className="input" type="tel" inputMode="tel" value={form.contact} onChange={set('contact')} placeholder="Mobile number" />
+          <input id="ct" className="input" type="tel" inputMode="tel" value={form.contact} onChange={set('contact')} placeholder="Mobile number" autoComplete="off" enterKeyHint="next" />
         </div>
         <div className="field">
           <label htmlFor="ow">
             Owner name <span className="opt">(optional)</span>
           </label>
-          <input id="ow" className="input" value={form.owner_name} onChange={set('owner_name')} />
+          <input id="ow" className="input" value={form.owner_name} onChange={set('owner_name')} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
         </div>
       </div>
 
@@ -193,7 +194,7 @@ export default function AddLeadModal({ areas, defaultAreaId, onClose, onSaved })
         <label htmlFor="pr">
           Price <span className="opt">(optional)</span>
         </label>
-        <input id="pr" className="input" type="number" inputMode="decimal" min="0" value={form.price} onChange={set('price')} placeholder="₹" />
+        <input id="pr" className="input" type="number" inputMode="decimal" min="0" value={form.price} onChange={set('price')} placeholder="₹" enterKeyHint="next" />
       </div>
 
       <div className="field" style={{ marginBottom: 0 }}>

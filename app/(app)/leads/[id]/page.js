@@ -51,21 +51,21 @@ function EditModal({ lead, onClose, onSaved }) {
       {error && <div className="err">{error}</div>}
       <div className="field">
         <label>Hotel name</label>
-        <input className="input" value={form.hotel_name} onChange={set('hotel_name')} />
+        <input className="input" value={form.hotel_name} onChange={set('hotel_name')} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="form-grid">
         <div className="field">
           <label>Contact</label>
-          <input className="input" type="tel" value={form.contact} onChange={set('contact')} />
+          <input className="input" type="tel" value={form.contact} onChange={set('contact')} inputMode="tel" autoComplete="off" enterKeyHint="next" />
         </div>
         <div className="field">
           <label>Owner <span className="opt">(optional)</span></label>
-          <input className="input" value={form.owner_name} onChange={set('owner_name')} />
+          <input className="input" value={form.owner_name} onChange={set('owner_name')} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
         </div>
       </div>
       <div className="field" style={{ marginBottom: 0 }}>
         <label>Price <span className="opt">(optional)</span></label>
-        <input className="input" type="number" inputMode="decimal" min="0" value={form.price} onChange={set('price')} />
+        <input className="input" type="number" inputMode="decimal" min="0" value={form.price} onChange={set('price')} enterKeyHint="next" />
       </div>
     </Modal>
   );

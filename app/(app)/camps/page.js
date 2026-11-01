@@ -5,6 +5,7 @@ import { api, initials, useFetch } from '@/lib/client';
 import { useUser } from '@/components/User';
 import { useToast } from '@/components/Toast';
 import { Empty, Icon, Loading, Modal } from '@/components/ui';
+import { isTouch } from '@/lib/dom';
 
 function CampModal({ camp, team, onClose, onSaved }) {
   const toast = useToast();
@@ -72,13 +73,13 @@ function CampModal({ camp, team, onClose, onSaved }) {
       {error && <div className="err">{error}</div>}
       <div className="field">
         <label>Camp / area name</label>
-        <input className="input" value={form.name} onChange={set('name')} placeholder="e.g. Shirdi – Main Road" autoFocus />
+        <input className="input" value={form.name} onChange={set('name')} placeholder="e.g. Shirdi – Main Road" autoFocus={!isTouch()} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="field">
         <label>
           City <span className="opt">(optional)</span>
         </label>
-        <input className="input" value={form.city} onChange={set('city')} />
+        <input className="input" value={form.city} onChange={set('city')} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="field">
         <label>

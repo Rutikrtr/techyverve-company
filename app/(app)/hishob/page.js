@@ -5,6 +5,7 @@ import { api, fmtDate, inr, useFetch } from '@/lib/client';
 import { useToast } from '@/components/Toast';
 import ClientModal from '@/components/ClientModal';
 import { Empty, Icon, Loading, Modal } from '@/components/ui';
+import { isTouch } from '@/lib/dom';
 
 /* ---------------- Summary ---------------- */
 function Summary() {
@@ -110,7 +111,7 @@ function Clients() {
       <div className="row" style={{ marginBottom: 14 }}>
         <div className="search">
           <Icon name="search" size={14} />
-          <input className="input" placeholder="Search confirmed hotels" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input className="input" placeholder="Search confirmed hotels" value={q} onChange={(e) => setQ(e.target.value)} type="search" inputMode="search" enterKeyHint="search" data-enter-blur="1" autoComplete="off" />
         </div>
         <span className="spacer" />
         <button className="btn primary" onClick={() => setModal('new')}>
@@ -256,11 +257,11 @@ function ExpenseModal({ expense, onClose, onSaved }) {
       </div>
       <div className="field">
         <label>What was it for?</label>
-        <input className="input" value={form.title} onChange={set('title')} placeholder="e.g. Instagram ads, office rent" autoFocus />
+        <input className="input" value={form.title} onChange={set('title')} placeholder="e.g. Instagram ads, office rent" autoFocus={!isTouch()} enterKeyHint="next" autoCapitalize="words" autoComplete="off" />
       </div>
       <div className="field">
         <label>Amount (₹)</label>
-        <input className="input" type="number" inputMode="decimal" min="0" value={form.amount} onChange={set('amount')} />
+        <input className="input" type="number" inputMode="decimal" min="0" value={form.amount} onChange={set('amount')} enterKeyHint="next" />
       </div>
       <div className="field" style={{ marginBottom: 0 }}>
         <label>Notes <span className="opt">(optional)</span></label>

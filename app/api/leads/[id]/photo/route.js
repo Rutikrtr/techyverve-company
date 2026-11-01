@@ -4,12 +4,13 @@ import { removePhotos, uploadPhoto } from '@/lib/storage';
 
 // Replace (retake) the hotel photo.
 export const POST = withAuth(async (req, { user, params }) => {
-  const { data: lead } = await db()
+  const { data: lead, error: findErr } = await db()
     .from('leads')
-    .select('id, area_id, photo_path')
+    .select('*')
     .eq('id', params.id)
     .eq('company_id', user.companyId)
     .maybeSingle();
+  if (findErr) throw findErr;
   if (!lead) return bad('Lead not found', 404);
   const ids = await areaIdsFor(user);
   if (ids && !ids.includes(lead.area_id)) return bad('Lead not found', 404);

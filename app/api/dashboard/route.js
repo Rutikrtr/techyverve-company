@@ -18,7 +18,8 @@ export const GET = withAuth(async (req, { user }) => {
       .order('created_at', { ascending: false })
       .limit(2000);
     if (ids) lq = lq.in('area_id', ids);
-    const { data } = await lq;
+    const { data, error: leadsErr } = await lq;
+    if (leadsErr) throw leadsErr;
     leads = data || [];
 
     if (ids) areaCount = ids.length;
